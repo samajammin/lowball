@@ -1,0 +1,9 @@
+{
+  "name": "lowball",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomiclabs/buidler": "^1.2.0"
+  }
+}
