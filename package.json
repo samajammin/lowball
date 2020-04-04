@@ -3,7 +3,22 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "author": "Sam Richards <sbrichards@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "scripts": {
+    "test": "buidler test"
+  },
   "devDependencies": {
-    "@nomiclabs/buidler": "^1.2.0"
-  }
+    "@nomiclabs/buidler": "^1.2.0",
+    "@nomiclabs/buidler-ethers": "^1.2.0",
+    "@nomiclabs/buidler-waffle": "^1.2.0",
+    "@openzeppelin/contracts": "^2.5.0",
+    "chai": "^4.2.0",
+    "ethereum-waffle": "^2.3.2",
+    "ethers": "^4.0.45"
+  },
+  "dependencies": {}
 }
