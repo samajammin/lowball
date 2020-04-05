@@ -34,14 +34,13 @@ contract Auction {
 
     struct Bid {
         uint bid;
-        address bidder;
+        address payable bidder;
     }
     Bid[] bids;
 
     address public owner;
     uint public bidCost = 1000000000000000000;
-    uint public maxBids = 10;
-    uint public bidCount = 0;
+    uint public maxBids = 5;
 
     constructor() public {
         console.log("Deploying an Auction");
@@ -49,7 +48,7 @@ contract Auction {
     }
 
     function bid(uint _bid) public payable {
-        require(bidCount < maxBids, "Auction is closed.");
+        require(bids.length < maxBids, "Auction is closed.");
         require(msg.value >= bidCost, "You must send at least 1 ETH.");
 
         console.log("Submitting a bid: ", _bid);
@@ -58,25 +57,58 @@ contract Auction {
            bid: _bid,
            bidder: msg.sender 
         }));
-        bidCount++;
     }
 
-    // TODO only owner
-    // function closeAuction() public {
-    //     require(bidCount == maxBids, "Auction is still in progress.");
-        
-    //     // Calculate lowest unique bid
-    //     // TODO actually check for uniqueness
-    //     uint winningBidIndex = 0;
-    //     for (uint i = 0; i < bids.length; i++) {
-    //         if (bids[i].bid < bids[winningBidIndex].bid) {
-    //             winningBidIndex = i;
-    //         }
-    //     }
+    function getWinner() public view returns (uint bidIndex) {
+        require(bids.length == maxBids, "Auction is still in progress.");
 
-    //     console.log("balance: ", address(this).balance);
+        for (uint i = 0; i < bids.length; i++) {
+            uint currentValue = bids[i].bid;
+            bool isWinner = true;
 
-    //     // Send funds to winner
-    //     bids[winningBidIndex].bidder.transfer(address(this).balance);
-    // }
+            for (uint j = 0; j < bids.length; j++) {
+                // don't compare to self
+                if (i == j) {
+                    continue;
+                }
+
+                uint compValue = bids[j].bid;
+
+                // is duplicate
+                if (currentValue == compValue) {
+                    isWinner = false;
+                    break;
+                }
+
+                if (currentValue > compValue) {
+                    isWinner = false;
+                    // isWinner = false UNLESS compValue is a duplicate
+                    for (uint k = 0; k < bids.length; k++) {
+                        // compValue is duplicate
+                        if (compValue == bids[k].bid && j != k) {
+                            isWinner = true;
+                        }
+                    }
+                }
+
+                if (!isWinner) {
+                    break;
+                }
+            }
+
+            if (isWinner) {
+                return i;
+            }
+        }
+
+        return 2^256-1; // Max uint
+    }
+
+    function completeAuction() public {
+        uint winningIndex = getWinner();
+        address payable winner = bids[winningIndex].bidder;
+        console.log("completeAuction! winner: ", winner);
+        console.log("completeAuction! winning bid: ", bids[winningIndex].bid);
+        winner.transfer(address(this).balance);
+    }
 }
