@@ -53,10 +53,7 @@ contract Auction {
 
         console.log("Submitting a bid: ", _bid);
         console.log("Bid value: ", msg.value);
-        bids.push(Bid({
-           bid: _bid,
-           bidder: msg.sender 
-        }));
+        bids.push(Bid({ bid: _bid, bidder: msg.sender }));
     }
 
     function getWinner() public view returns (uint bidIndex) {

@@ -1,72 +1,54 @@
-import React from "react";
-import logo from "./ethereumLogo.png";
-import { addresses, abis } from "@project/contracts";
-import { gql } from "apollo-boost";
+import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import { useQuery } from "@apollo/react-hooks";
 import "./App.css";
 
-const GET_TRANSFERS = gql`
-  {
-    transfers(first: 10) {
-      id
-      from
-      to
-      value
-    }
-  }
-`;
+// Created check function to see if the MetaMask extension is installed
+const isMetaMaskInstalled = () => {
+  // Have to check the ethereum binding on the window object to see if it's installed
+  const { ethereum } = window;
+  return Boolean(ethereum && ethereum.isMetaMask);
+};
 
-async function readOnchainBalance() {
-  // Should replace with the end-user wallet, e.g. Metamask
-  const provider = await new ethers.providers.Web3Provider(
-    window.web3.currentProvider
-  );
-  console.log(provider);
-  // Create an instance of ethers.Contract
-  // Read more about ethers.js on https://docs.ethers.io/ethers.js/html/api-contract.html
-  const ceaErc20 = new ethers.Contract(
-    addresses.ceaErc20,
-    abis.erc20,
-    provider
-  );
-  // A pre-defined address that owns some CEAERC20 tokens
-  const tokenBalance = await ceaErc20.balanceOf(
-    "0x3f8CB69d9c0ED01923F11c829BaE4D9a4CB6c82C"
-  );
-  console.log({ tokenBalance: tokenBalance.toString() });
-}
+const App = () => {
+  const [appState, setAppState] = useState({
+    address: "0x06DbFdbFdA84eABAea177760092Dc22ab1D8f372", // TODO
+    balance: "",
+    provider: {},
+  });
 
-function App() {
-  const { loading, error, data } = useQuery(GET_TRANSFERS);
+  useEffect(() => {
+    const initialize = async () => {
+      const provider = await new ethers.providers.Web3Provider(
+        window.web3.currentProvider
+      );
 
-  React.useEffect(() => {
-    if (!loading && !error && data && data.transfers) {
-      console.log({ transfers: data.transfers });
-    }
-  }, [loading, error, data]);
+      // TODO is this specific to MetaMask?
+      // Should add check for MetaMask
+      // https://docs.metamask.io/guide/create-dapp.html
+      const { ethereum } = window;
+      await ethereum.enable();
+
+      const address = appState.address;
+      let balance = await provider.getBalance(address);
+      balance = ethers.utils.formatEther(balance);
+
+      setAppState({ balance, provider, address });
+    };
+    initialize();
+  }, [appState.address]);
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="react-logo" />
-        <p>
-          Edit <code>packages/react-app/src/App.js</code> and save to reload.
-        </p>
-        <button onClick={() => readOnchainBalance()}>
-          Read On-Chain Balance
-        </button>
-        <a
-          className="App-link"
-          href="https://thegraph.com/docs/quick-start"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn The Graph
-        </a>
-      </header>
+      <section>
+        <h1>HEY THERE</h1>
+        {!isMetaMaskInstalled() && (
+          <h1>You need to install MetaMask to use this app.</h1>
+        )}
+        <h3>User balance:</h3>
+        {appState.balance}
+      </section>
     </div>
   );
-}
+};
 
 export default App;
