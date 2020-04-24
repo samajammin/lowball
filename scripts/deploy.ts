@@ -5,7 +5,6 @@ import fs from "fs"
 async function main() {
   const factory = await ethers.getContract("Greeter")
 
-  // If we had constructor arguments, they would be passed into deploy()
   let contract = await factory.deploy("My custom greeting")
 
   // The address the Contract WILL have once mined
@@ -14,14 +13,12 @@ async function main() {
   // The transaction that was sent to the network to deploy the Contract
   console.log(contract.deployTransaction.hash)
 
-  // The contract is NOT deployed yet; we must wait until it is mined
+  // Wait until the contract it is mined
   await contract.deployed()
 
-  // TODO use relative path
-  const artifact = await readArtifact(
-    "/Users/samrichards/code/lowball/artifacts/", // TODO update
-    "Greeter"
-  )
+  const projectDir = __dirname.split("/").slice(0, -1).join("/")
+  const artifactsDir = projectDir + "/artifacts/"
+  const artifact = await readArtifact(artifactsDir, "Greeter")
 
   // Save the address & abi to access it from the frontend
   fs.writeFileSync(
